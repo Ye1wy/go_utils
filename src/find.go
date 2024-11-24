@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
@@ -33,11 +34,24 @@ func FilePathWalkDir(root string) ([]string, error) {
 	return files, nil
 }
 
+func ValidingFlag() error {
+	var err error
+
+	if *fFlag == "nothing" && *extFlag != "nothing" {
+		err = errors.New("ext flag comes only with f flag, read the description better. BE BETTER")
+		return err
+	}
+
+	return nil
+}
+
 func main() {
 	flag.Parse()
 
-	if *fFlag == "nothing" && *extFlag != "nothing" {
-		fmt.Println("ext flag comes only with f flag, read the description better. BE BETTER")
+	err := ValidingFlag()
+
+	if err != nil {
+		fmt.Printf("[Error] Flag error: %v\n", err)
 		return
 	}
 
