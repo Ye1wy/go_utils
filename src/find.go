@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 )
 
@@ -17,18 +18,57 @@ var (
 	allNotExist bool
 )
 
-func FlagProcessingD(path string, info fs.FileInfo) (files []string) {
+func FlagProcessingD(root string, path string, info fs.FileInfo) (files []string) {
 	if info.IsDir() {
-		files = append(files, path)
+		if path == root {
+			return
+		}
+
+		files = append(files, root+path)
 	}
 
 	return
 }
 
-func FlagProcessingF(path string, info fs.FileInfo) (files []string) {
+func FlagProcessingF(root string, path string, info fs.FileInfo) (files []string) {
 	if !info.IsDir() {
-		files = append(files, path)
+		if path == root {
+			return
+		}
+
+		if _, err := os.Readlink(path); err == nil {
+			return
+		}
+
+		if *extFlag != "nothing" {
+			fileExtention := filepath.Ext(path)
+			NeededExtention := "." + *extFlag
+
+			if fileExtention == NeededExtention {
+				files = append(files, root+path)
+			}
+
+		} else {
+			files = append(files, root+path)
+		}
 	}
+
+	return
+}
+
+func FlagProcessingSL(root string, path string) (files []string) {
+	info, err := os.Readlink(path)
+
+	if err != nil {
+		return
+	}
+
+	if _, err := os.Stat(path); err != nil {
+		files = append(files, root+path+"->[broken]")
+		return
+	}
+
+	files = append(files, root+path+"->"+info)
 
 	return
 }
@@ -36,19 +76,26 @@ func FlagProcessingF(path string, info fs.FileInfo) (files []string) {
 func FilePathWalkDir(root string) ([]string, error) {
 	var files []string
 
+	if !(*fFlag) && !(*slFlag) {
+		files = append(files, ".")
+	}
+
 	err := filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
 		if *dFlag {
-			files = append(files, FlagProcessingD(path, info)...)
-
+			files = append(files, FlagProcessingD(root, path, info)...)
 		}
 
 		if *fFlag {
-			files = append(files, FlagProcessingF(path, info)...)
+			files = append(files, FlagProcessingF(root, path, info)...)
+		}
+
+		if *slFlag {
+			files = append(files, FlagProcessingSL(root, path)...)
 		}
 
 		if allNotExist {
-			files = append(files, FlagProcessingD(path, info)...)
-			files = append(files, FlagProcessingF(path, info)...)
+			files = append(files, FlagProcessingD(root, path, info)...)
+			files = append(files, FlagProcessingF(root, path, info)...)
 		}
 
 		return nil
@@ -57,9 +104,6 @@ func FilePathWalkDir(root string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("=============out=================")
-	fmt.Println(files)
 
 	return files, nil
 }
@@ -83,7 +127,6 @@ func main() {
 	flag.Parse()
 
 	path := "./"
-
 	err := ValidingFlag()
 
 	if err != nil {
@@ -96,8 +139,6 @@ func main() {
 	if len(args) > 0 {
 		path = args[0]
 	}
-
-	fmt.Println(path)
 
 	entries, err := FilePathWalkDir(path)
 
