@@ -1,10 +1,10 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
-	"time"
 )
 
 var (
@@ -13,24 +13,42 @@ var (
 	wFlag = flag.Bool("w", false, "")
 )
 
-func FileProcessor(file string) {
-	for i := 0; i < 3; i++ {
-		time.Sleep(500 * time.Millisecond)
-		fmt.Println(file)
+func ValidingFlag() (err error) {
+	var flagCount int
+
+	if *lFlag {
+		flagCount++
 	}
+
+	if *mFlag {
+		flagCount++
+	}
+
+	if *wFlag {
+		flagCount++
+	}
+
+	if flagCount > 1 {
+		err = errors.New("Only 1 flag")
+		return
+	}
+
+	return nil
 }
 
 func main() {
 	flag.Parse()
+
+	err := ValidingFlag()
+
+	if err != nil {
+		fmt.Println("[Error] Flag error: ", err)
+		return
+	}
 
 	args := flag.Args()
 
 	if len(args) < 1 {
 		log.Fatal("Nothing to read mate!")
 	}
-
-	go FileProcessor("Papa")
-	go FileProcessor("Mama")
-
-	FileProcessor("Hello")
 }
