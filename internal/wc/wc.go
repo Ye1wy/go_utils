@@ -1,10 +1,8 @@
-package main
+package wc
 
 import (
 	"errors"
 	"flag"
-	"fmt"
-	"log"
 )
 
 var (
@@ -34,21 +32,4 @@ func ValidingFlag() (err error) {
 	}
 
 	return nil
-}
-
-func main() {
-	flag.Parse()
-
-	err := ValidingFlag()
-
-	if err != nil {
-		fmt.Println("[Error] Flag error: ", err)
-		return
-	}
-
-	args := flag.Args()
-
-	if len(args) < 1 {
-		log.Fatal("Nothing to read mate!")
-	}
 }

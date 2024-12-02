@@ -1,11 +1,9 @@
-package main
+package find
 
 import (
 	"errors"
 	"flag"
-	"fmt"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -121,32 +119,4 @@ func ValidingFlag() error {
 	}
 
 	return nil
-}
-
-func main() {
-	flag.Parse()
-
-	path := "./"
-	err := ValidingFlag()
-
-	if err != nil {
-		fmt.Printf("[Error] Flag error: %v\n", err)
-		return
-	}
-
-	args := flag.Args()
-
-	if len(args) > 0 {
-		path = args[0]
-	}
-
-	entries, err := FilePathWalkDir(path)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, e := range entries {
-		fmt.Println(e)
-	}
 }
