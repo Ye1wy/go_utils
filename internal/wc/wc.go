@@ -72,15 +72,15 @@ func CharCounter(file string) (int, error) {
 	scanner := bufio.NewScanner(reader)
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := scanner.Bytes()
 
-		chars := utf8.RuneCountInString(line)
-		count += chars
+		count += utf8.RuneCount(line)
+		count++
 	}
 
 	if err := scanner.Err(); err != nil {
 		return count, err
 	}
 
-	return count, nil
+	return count - 1, nil
 }
