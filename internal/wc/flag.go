@@ -36,5 +36,9 @@ func ValidingFlag() (*Config, error) {
 		return nil, errors.New("Only 1 flag")
 	}
 
+	if flagCount == 0 {
+		*showWord = true
+	}
+
 	return &Config{ShowLine: *showLine, ShowChar: *showChar, ShowWord: *showWord}, nil
 }

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"go_utils/internal/wc"
+	"strconv"
 	"sync"
 )
 
@@ -15,33 +16,46 @@ func RunWC(config *wc.Config) error {
 		return errors.New("Nothing to read mate!")
 	}
 
-	wg := sync.WaitGroup{}
-	var mtx sync.Mutex
+	var counterFunc func(string) (int, error)
 
 	if config.ShowLine {
-		var res []int
+		counterFunc = wc.LineCounter
 
-		for _, item := range args {
-			wg.Add(1)
-			go func(fileName string) {
-				defer wg.Done()
-				temp, _ := wc.LineCounter(fileName)
+	} else if config.ShowWord {
+		counterFunc = wc.WordsCounter
 
-				mtx.Lock()
-				res = append(res, temp)
-				mtx.Unlock()
+	} else if config.ShowChar {
+		counterFunc = wc.CharCounter
+	}
 
-			}(item)
+	run_count(args, counterFunc)
 
-		}
+	return nil
+}
 
-		wg.Wait()
+func run_count(args []string, counterType func(string) (int, error)) {
+	wg := sync.WaitGroup{}
+	var mtx sync.Mutex
+	var res []int
 
-		for i := len(res) - 1; i >= 0; i-- {
-			fmt.Println(res[i])
-		}
+	for _, item := range args {
+		wg.Add(1)
+		go func(fileName string) {
+			defer wg.Done()
+			temp, _ := counterType(fileName)
+
+			mtx.Lock()
+			res = append(res, temp)
+			mtx.Unlock()
+
+		}(item)
 
 	}
 
-	return nil
+	wg.Wait()
+
+	for i, j := len(res)-1, 0; i >= 0; i-- {
+		fmt.Println(strconv.Itoa(res[i]) + " " + args[j])
+		j++
+	}
 }
