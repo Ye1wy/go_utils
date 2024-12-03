@@ -1,19 +1,9 @@
 package find
 
 import (
-	"errors"
-	"flag"
 	"io/fs"
 	"os"
 	"path/filepath"
-)
-
-var (
-	slFlag      = flag.Bool("sl", false, "Output only symlinks in path")
-	dFlag       = flag.Bool("d", false, "Output only dir in path")
-	fFlag       = flag.Bool("f", false, "Output only files in path")
-	extFlag     = flag.String("ext", "nothing", "")
-	allNotExist bool
 )
 
 func FlagProcessingD(root string, path string, info fs.FileInfo) (files []string) {
@@ -28,21 +18,10 @@ func FlagProcessingD(root string, path string, info fs.FileInfo) (files []string
 	return
 }
 
-func FlagProcessingF(root string, path string, info fs.FileInfo) (files []string) {
+func FlagProcessingF(config *Config, root string, path string, info fs.FileInfo) (files []string) {
 	if !info.IsDir() {
-		if path == root {
-			return
-		}
-
-		if _, err := os.Readlink(path); err == nil {
-			return
-		}
-
-		if *extFlag != "nothing" {
-			fileExtention := filepath.Ext(path)
-			NeededExtention := "." + *extFlag
-
-			if fileExtention == NeededExtention {
+		if config.FileExt != "" {
+			if filepath.Ext(path) == "."+config.FileExt {
 				files = append(files, root+path)
 			}
 
@@ -71,29 +50,25 @@ func FlagProcessingSL(root string, path string) (files []string) {
 	return
 }
 
-func FilePathWalkDir(root string) ([]string, error) {
+func FilePathWalkDir(config *Config, root string) ([]string, error) {
 	var files []string
 
-	if !(*fFlag) && !(*slFlag) {
-		files = append(files, ".")
-	}
-
 	err := filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
-		if *dFlag {
+		if config.ShowDirs {
 			files = append(files, FlagProcessingD(root, path, info)...)
 		}
 
-		if *fFlag {
-			files = append(files, FlagProcessingF(root, path, info)...)
+		if config.ShowFiles {
+			files = append(files, FlagProcessingF(config, root, path, info)...)
 		}
 
-		if *slFlag {
+		if config.ShowLinks {
 			files = append(files, FlagProcessingSL(root, path)...)
 		}
 
-		if allNotExist {
+		if !config.ShowDirs && !config.ShowFiles && !config.ShowLinks {
 			files = append(files, FlagProcessingD(root, path, info)...)
-			files = append(files, FlagProcessingF(root, path, info)...)
+			files = append(files, FlagProcessingF(config, root, path, info)...)
 		}
 
 		return nil
@@ -104,19 +79,4 @@ func FilePathWalkDir(root string) ([]string, error) {
 	}
 
 	return files, nil
-}
-
-func ValidingFlag() error {
-	var err error
-
-	if !(*fFlag) && *extFlag != "nothing" {
-		err = errors.New("error parse flag, flag ext only work with f flag")
-		return err
-	}
-
-	if !(*fFlag) && !(*dFlag) && !(*slFlag) {
-		allNotExist = true
-	}
-
-	return nil
 }
