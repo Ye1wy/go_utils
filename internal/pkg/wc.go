@@ -1,26 +1,19 @@
 package pkg
 
 import (
+	"errors"
 	"flag"
-	"fmt"
-	"log"
-
 	"go_utils/internal/wc"
 )
 
-func RunWC() {
-	flag.Parse()
-
-	err := wc.ValidingFlag()
-
-	if err != nil {
-		fmt.Println("[Error] Flag error: ", err)
-		return
-	}
-
+func RunWC(config *wc.Config) error {
 	args := flag.Args()
 
 	if len(args) < 1 {
-		log.Fatal("Nothing to read mate!")
+		return errors.New("Nothing to read mate!")
+	}
+
+	if config.ShowLine {
+
 	}
 }

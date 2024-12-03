@@ -1,35 +1,24 @@
 package wc
 
 import (
-	"errors"
-	"flag"
+	"bytes"
+	"io"
 )
 
-var (
-	lFlag = flag.Bool("l", false, "")
-	mFlag = flag.Bool("m", false, "")
-	wFlag = flag.Bool("w", false, "")
-)
+func LienCounter(reader io.Reader) (int, error) {
+	buf := make([]byte, 32*1024)
+	count := 0
+	lineSeparetor := []byte{'\n'}
 
-func ValidingFlag() (err error) {
-	var flagCount int
+	for {
+		readed, err := reader.Read(buf)
+		count += bytes.Count(buf[:readed], lineSeparetor)
 
-	if *lFlag {
-		flagCount++
+		switch {
+		case err != nil:
+			return count, err
+		case err == io.EOF:
+			return count, nil
+		}
 	}
-
-	if *mFlag {
-		flagCount++
-	}
-
-	if *wFlag {
-		flagCount++
-	}
-
-	if flagCount > 1 {
-		err = errors.New("Only 1 flag")
-		return
-	}
-
-	return nil
 }
