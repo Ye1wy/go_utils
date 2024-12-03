@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func LienCounter(reader io.Reader) (int, error) {
+func LineCounter(reader io.Reader) (int, error) {
 	buf := make([]byte, 32*1024)
 	count := 0
 	lineSeparetor := []byte{'\n'}
