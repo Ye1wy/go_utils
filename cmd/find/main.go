@@ -1,7 +1,25 @@
 package main
 
-import "go_utils/internal/pkg"
+import (
+	"flag"
+	"fmt"
+	"go_utils/internal/find"
+	"go_utils/internal/pkg"
+)
 
 func main() {
-	pkg.RunFind()
+	config, err := find.ValidingFlag()
+
+	if err != nil {
+		fmt.Printf("[Error] %v\n", err)
+		return
+	}
+
+	path := "./"
+
+	if len(flag.Args()) > 0 {
+		path = flag.Arg(0)
+	}
+
+	pkg.RunFind(config, path)
 }
