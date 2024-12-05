@@ -54,6 +54,10 @@ func FilePathWalkDir(config *Config, root string) ([]string, error) {
 	var files []string
 
 	err := filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
+		if _, err := os.Stat(root); os.IsNotExist(err) {
+			return err
+		}
+
 		if config.ShowDirs {
 			files = append(files, FlagProcessingD(root, path, info)...)
 		}
