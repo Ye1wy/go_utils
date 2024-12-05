@@ -13,7 +13,7 @@ func RunWC(config *wc.Config) error {
 	args := flag.Args()
 
 	if len(args) < 1 {
-		return errors.New("Nothing to read mate!")
+		return errors.New("nothing to read mate")
 	}
 
 	var counterFunc func(string) (int, error)
