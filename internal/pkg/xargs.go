@@ -3,13 +3,14 @@ package pkg
 import (
 	"flag"
 	"fmt"
+	"go_utils/internal/config"
 	"go_utils/internal/xargs"
 )
 
 func RunXargs() {
-	config := &xargs.Config{}
+	conf := &config.Config{}
 
-	config.AddFlag(&xargs.ParallelFlag{})
+	conf.AddFlag(&config.ParallelFlag{})
 	flag.Parse()
 
 	arguments, err := xargs.ReadArgs()
@@ -18,8 +19,7 @@ func RunXargs() {
 		return
 	}
 
-	// fmt.Println(arguments)
-	getedValue, err := config.GetFlagValue("parallel")
+	getedValue, err := conf.GetFlagValue("parallel")
 	if err != nil {
 		fmt.Printf("[Error] Error in geting flag value: %v\n", err)
 		return
