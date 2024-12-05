@@ -1,7 +1,9 @@
 package main
 
-// import "go_utils/internal/xargs"
+import (
+	"go_utils/internal/pkg"
+)
 
-// func main() {
-// 	xargs.ReadArgs()
-// }
+func main() {
+	pkg.RunXargs()
+}
