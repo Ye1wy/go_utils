@@ -7,13 +7,15 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 )
 
-type FileData struct {
-	Header *tar.Header
-	Reader io.Reader
-}
+const (
+	archiveExtention = ".tar.gz"
+	timestampFormat  = "20060102150405"
+)
 
 func ProcessFile(fileName, storageDir string, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -45,7 +47,11 @@ func ProcessFile(fileName, storageDir string, wg *sync.WaitGroup) {
 		return
 	}
 
-	archiveName := filepath.Join(archiveStorageDir, fileInfo.Name()+".tar.gz")
+	fileNameWithoutExt := strings.TrimSuffix(fileInfo.Name(), filepath.Ext(fileInfo.Name()))
+	timestamp := time.Now().Format(timestampFormat)
+	formatedFileName := fileNameWithoutExt + timestamp + archiveExtention
+
+	archiveName := filepath.Join(archiveStorageDir, formatedFileName)
 	archiveFile, err := os.Create(archiveName)
 	if err != nil {
 		fmt.Printf("[Error] Cannot create a archive file: %v\n", err)
