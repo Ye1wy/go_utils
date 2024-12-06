@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"go_utils/internal/config"
+	"go_utils/internal/rotate"
+	"sync"
 )
 
 func RunRotate() {
@@ -18,7 +20,21 @@ func RunRotate() {
 		return
 	}
 
-	value := getFlagValue.(string)
+	pathToComminDir := getFlagValue.(string)
+	args := flag.Args()
 
-	fmt.Println(value)
+	if len(args) == 0 {
+		fmt.Println("[Error] Nothing to archivate, mate")
+		return
+	}
+
+	var wg sync.WaitGroup
+
+	for _, item := range args {
+		wg.Add(1)
+
+		go rotate.ProcessFile(item, pathToComminDir, &wg)
+	}
+
+	wg.Wait()
 }
