@@ -7,14 +7,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 const (
 	archiveExtention = ".tar.gz"
-	timestampFormat  = "20060102150405"
 )
 
 func ProcessFile(fileName, storageDir string, wg *sync.WaitGroup) {
@@ -48,7 +47,7 @@ func ProcessFile(fileName, storageDir string, wg *sync.WaitGroup) {
 	}
 
 	fileNameWithoutExt := strings.TrimSuffix(fileInfo.Name(), filepath.Ext(fileInfo.Name()))
-	timestamp := time.Now().Format(timestampFormat)
+	timestamp := strconv.FormatInt(fileInfo.ModTime().Unix(), 10)
 	formatedFileName := fileNameWithoutExt + timestamp + archiveExtention
 
 	archiveName := filepath.Join(archiveStorageDir, formatedFileName)
